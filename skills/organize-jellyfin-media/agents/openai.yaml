@@ -1,0 +1,4 @@
+interface:
+  display_name: "Organize Jellyfin Media"
+  short_description: "Rename movies and series for Jellyfin"
+  default_prompt: "Use $organize-jellyfin-media to organize this media folder for Jellyfin with IMDb IDs."
