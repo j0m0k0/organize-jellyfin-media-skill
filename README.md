@@ -1,4 +1,4 @@
-# Organize Jellyfin Media Skill
+# Jellyfin Skills
 
 <p>
   <img src="assets/badges/agent-skill.svg" alt="Agent Skill">
@@ -7,20 +7,26 @@
   <img src="assets/badges/dry-run-first.svg" alt="Dry-run first">
 </p>
 
-A focused Agent Skill for organizing movie and TV/serial folders according to Jellyfin media naming conventions, with a preference for IMDb metadata provider IDs.
+A collection of Agent Skills for working with Jellyfin media libraries.
 
-The skill helps an agent inspect messy media libraries, skip folders that are already canonical, create reviewed rename plans, and apply safe folder/file moves without deleting media by default.
+The first included skill, `organize-jellyfin-media`, helps an agent inspect messy movie and TV/serial libraries, skip folders that are already canonical, create reviewed rename plans, and apply safe folder/file moves without deleting media by default.
+
+## Skills
+
+| Skill | Purpose | skills.sh |
+| --- | --- | --- |
+| [`organize-jellyfin-media`](skills/organize-jellyfin-media/) | Organize Jellyfin movie and TV folders using Jellyfin naming conventions and IMDb metadata IDs. | [Open](https://www.skills.sh/j0m0k0/jellyfin-skills/organize-jellyfin-media) |
 
 ## Install
 
 ```bash
-npx skills add j0m0k0/organize-jellyfin-media-skill --skill organize-jellyfin-media
+npx skills add j0m0k0/jellyfin-skills --skill organize-jellyfin-media
 ```
 
 Or use the skill without installing it:
 
 ```bash
-npx skills use j0m0k0/organize-jellyfin-media-skill@organize-jellyfin-media
+npx skills use j0m0k0/jellyfin-skills@organize-jellyfin-media
 ```
 
 ## What It Does
