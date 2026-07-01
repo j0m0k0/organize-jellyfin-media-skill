@@ -78,6 +78,28 @@ def unique_path(path: Path) -> Path:
     raise FileExistsError(f"Destination already exists: {path}")
 
 
+def is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def resolve_top_level_source(root: Path, source: str) -> Path:
+    """Resolve a mapping source while keeping it confined to the media root."""
+    source_path = Path(source)
+    if source_path.is_absolute():
+        raise ValueError(f"Mapping source must be relative to the library root: {source!r}")
+    if len(source_path.parts) != 1 or source_path.parts[0] in {"", ".", ".."}:
+        raise ValueError(f"Mapping source must be a single top-level name: {source!r}")
+
+    resolved = (root / source_path).resolve(strict=False)
+    if not is_relative_to(resolved, root):
+        raise ValueError(f"Mapping source escapes the library root: {source!r}")
+    return resolved
+
+
 def add_move(moves: list[Move], src: Path, dst: Path, reason: str) -> None:
     if src == dst:
         return
@@ -177,7 +199,7 @@ def plan(root: Path, items: list[dict], library_type: str) -> tuple[list[Move], 
         if library_type == "shows" and kind != "show":
             raise ValueError(f"Expected show item in shows library: {item}")
 
-        src = root / str(item["source"])
+        src = resolve_top_level_source(root, str(item["source"]))
         if not src.exists():
             raise FileNotFoundError(f"Source not found: {src}")
         canonical = canonical_name(item)
@@ -204,10 +226,16 @@ def plan(root: Path, items: list[dict], library_type: str) -> tuple[list[Move], 
     return moves, skipped
 
 
-def validate_moves(moves: Iterable[Move]) -> None:
+def validate_moves(moves: Iterable[Move], root: Path) -> None:
     moves = list(moves)
     dests: dict[Path, Path] = {}
     for move in moves:
+        src_resolved = move.src.resolve(strict=False)
+        dst_resolved = move.dst.resolve(strict=False)
+        if not is_relative_to(src_resolved, root):
+            raise ValueError(f"Move source escapes the library root: {move.src}")
+        if not is_relative_to(dst_resolved, root):
+            raise ValueError(f"Move destination escapes the library root: {move.dst}")
         if move.dst in dests and dests[move.dst] != move.src:
             raise FileExistsError(f"Two sources target {move.dst}: {dests[move.dst]} and {move.src}")
         dests[move.dst] = move.src
@@ -249,7 +277,7 @@ def main() -> int:
         raise SystemExit("--library-type is required when --mapping is used")
 
     moves, skipped = plan(root, load_items(args.mapping), args.library_type)
-    validate_moves(moves)
+    validate_moves(moves, root)
 
     for line in skipped:
         print(f"SKIP\t{line}")
